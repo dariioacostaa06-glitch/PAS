@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAS 2025-2026 // Terminal de Aprendizaje</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-deep: #0a0e14;
+  --bg-panel: #0d1117;
+  --bg-card: #131920;
+  --bg-elevated: #1a2233;
+  --bg-hover: #1e2a3a;
+  --border: #1e2d3d;
+  --border-bright: #2a3f55;
+  --text-primary: #c5d1de;
+  --text-secondary: #6e7f8d;
+  --text-dim: #3d4f5f;
+  --accent-green: #00ff9f;
+  --accent-green-dim: #00cc7f;
+  --accent-green-bg: rgba(0,255,159,0.06);
+  --accent-cyan: #00d4ff;
+  --accent-cyan-dim: #0099bb;
+  --accent-amber: #ffb700;
+  --accent-red: #ff3366;
+  --accent-purple: #b48eff;
+  --glow-green: 0 0 20px rgba(0,255,159,0.15);
+  --glow-cyan: 0 0 20px rgba(0,212,255,0.15);
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  --font-display: 'Space Grotesk', sans-serif;
+  --sidebar-w: 280px;
+  --header-h: 56px;
+  --radius: 6px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--border-bright) var(--bg-deep); }
+body { font-family: var(--font-mono); background: var(--bg-deep); color: var(--text-primary); line-height: 1.7; font-size: 14px; overflow-x: hidden; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-green-dim); }
+
+::selection { background: rgba(0,255,159,0.2); color: var(--accent-green); }
+
+/* HEADER */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+  background: rgba(10,14,20,0.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px;
+  z-index: 1000; gap: 16px;
+}
+.header-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  color: var(--accent-green); letter-spacing: -0.5px; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo .blink { animation: blink 1.2s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.header-logo span.dim { color: var(--text-dim); font-weight: 400; }
+
+.search-box {
+  flex: 1; max-width: 420px; position: relative;
+}
+.search-box input {
+  width: 100%; padding: 8px 12px 8px 36px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 13px; outline: none;
+  transition: var(--transition);
+}
+.search-box input:focus { border-color: var(--accent-green); box-shadow: var(--glow-green); }
+.search-box input::placeholder { color: var(--text-dim); }
+.search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+
+.header-actions { display: flex; gap: 8px; margin-left: auto; }
+.btn-icon {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 16px;
+}
+.btn-icon:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.btn-menu { display: none; }
+.progress-counter {
+  font-size: 11px; color: var(--accent-green); background: var(--accent-green-bg);
+  border: 1px solid rgba(0,255,159,0.2); border-radius: 20px; padding: 4px 12px;
+  font-weight: 600; white-space: nowrap;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; top: var(--header-h); left: 0; bottom: 0;
+  width: var(--sidebar-w); background: var(--bg-panel);
+  border-right: 1px solid var(--border); overflow-y: auto;
+  z-index: 900; transition: transform 0.3s ease;
+  display: flex; flex-direction: column;
+}
+.sidebar-section { padding: 16px 12px 8px; }
+.sidebar-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text-dim); padding: 0 8px; margin-bottom: 8px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius);
+  cursor: pointer; transition: var(--transition);
+  text-decoration: none; color: var(--text-secondary); font-size: 12px;
+  border-left: 2px solid transparent; margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-item.active {
+  background: var(--accent-green-bg); color: var(--accent-green);
+  border-left-color: var(--accent-green);
+}
+.nav-num {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; font-size: 10px; font-weight: 700;
+  background: var(--bg-elevated); color: var(--text-dim); flex-shrink: 0;
+}
+.nav-item.active .nav-num { background: rgba(0,255,159,0.15); color: var(--accent-green); }
+.nav-item .check-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-left: auto; flex-shrink: 0;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+}
+.nav-item.completed .check-dot { background: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 6px rgba(0,255,159,0.4); }
+
+.sidebar-progress {
+  margin-top: auto; padding: 16px; border-top: 1px solid var(--border);
+}
+.progress-bar-wrap {
+  height: 4px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; margin-top: 8px;
+}
+.progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+  border-radius: 2px; transition: width 0.5s ease; width: 0%;
+}
+.progress-text { font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; }
+
+/* MAIN CONTENT */
+.main {
+  margin-left: var(--sidebar-w); margin-top: var(--header-h);
+  min-height: calc(100vh - var(--header-h));
+  padding: 32px 40px 80px;
+  max-width: 1000px;
+}
+
+/* THEME SECTIONS */
+.theme-section {
+  margin-bottom: 64px; opacity: 0; transform: translateY(20px);
+  animation: fadeUp 0.6s ease forwards;
+}
+.theme-section:nth-child(2) { animation-delay: 0.1s; }
+.theme-section:nth-child(3) { animation-delay: 0.15s; }
+@keyframes fadeUp { to { opacity:1; transform: translateY(0); } }
+
+.theme-header {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+}
+.theme-number {
+  font-family: var(--font-display); font-size: 42px; font-weight: 700;
+  color: var(--accent-green); line-height: 1; opacity: 0.3; flex-shrink: 0;
+}
+.theme-title-wrap { flex: 1; }
+.theme-title {
+  font-family: var(--font-display); font-size: 22px; font-weight: 600;
+  color: var(--text-primary); margin-bottom: 4px;
+}
+.theme-subtitle { font-size: 12px; color: var(--text-dim); }
+.theme-check {
+  appearance: none; width: 20px; height: 20px; border: 2px solid var(--border-bright);
+  border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 4px;
+  transition: var(--transition); position: relative;
+}
+.theme-check:checked {
+  background: var(--accent-green); border-color: var(--accent-green);
+}
+.theme-check:checked::after {
+  content: ''; position: absolute; top: 2px; left: 5px;
+  width: 5px; height: 9px; border: solid var(--bg-deep); border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* COLLAPSIBLE SECTIONS */
+.collapsible {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
+}
+.collapsible-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; cursor: pointer; transition: var(--transition);
+  user-select: none;
+}
+.collapsible-header:hover { background: var(--bg-hover); }
+.collapsible-icon {
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease; color: var(--accent-green); font-size: 12px; flex-shrink: 0;
+}
+.collapsible.open .collapsible-icon { transform: rotate(90deg); }
+.collapsible-label {
+  font-size: 13px; font-weight: 600; color: var(--text-primary); flex: 1;
+}
+.collapsible-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+}
+.tag-teoria { background: rgba(0,212,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,212,255,0.2); }
+.tag-ejercicio { background: rgba(255,183,0,0.1); color: var(--accent-amber); border: 1px solid rgba(255,183,0,0.2); }
+.tag-mapa { background: rgba(180,142,255,0.1); color: var(--accent-purple); border: 1px solid rgba(180,142,255,0.2); }
+
+.collapsible-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+}
+.collapsible.open .collapsible-body { max-height: 20000px; }
+.collapsible-content { padding: 0 16px 16px; }
+
+/* CONTENT STYLES */
+.content h3 {
+  font-family: var(--font-display); font-size: 15px; font-weight: 600;
+  color: var(--accent-cyan); margin: 20px 0 10px; padding-left: 12px;
+  border-left: 3px solid var(--accent-cyan);
+}
+.content h4 {
+  font-size: 13px; font-weight: 600; color: var(--accent-amber);
+  margin: 16px 0 8px;
+}
+.content p { margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
+.content ul, .content ol {
+  margin: 8px 0 12px 20px; font-size: 13px; color: var(--text-secondary);
+}
+.content li { margin-bottom: 6px; line-height: 1.7; }
+.content li::marker { color: var(--accent-green); }
+.content strong { color: var(--text-primary); font-weight: 600; }
+.content em { color: var(--accent-purple); font-style: normal; }
+
+.code-block {
+  background: var(--bg-deep); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px; margin: 10px 0;
+  overflow-x: auto; position: relative;
+}
+.code-block::before {
+  content: attr(data-lang); position: absolute; top: 6px; right: 10px;
+  font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+}
+.code-block code {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+  color: var(--accent-green); white-space: pre;
+}
+.code-block .cmd { color: var(--accent-cyan); }
+.code-block .flag { color: var(--accent-amber); }
+.code-block .path { color: var(--accent-purple); }
+.code-block .comment { color: var(--text-dim); font-style: italic; }
+
+.key-concept {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--accent-green-bg); border: 1px solid rgba(0,255,159,0.15);
+  border-radius: 4px; padding: 1px 8px; font-size: 12px; color: var(--accent-green);
+  font-weight: 500;
+}
+
+.info-box {
+  background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15);
+  border-radius: var(--radius); padding: 12px 16px; margin: 12px 0;
+  font-size: 12px; color: var(--accent-cyan);
+}
+
+.file-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--accent-amber); font-size: 12px;
+  text-decoration: none; transition: var(--transition); margin: 4px;
+}
+.file-link:hover { border-color: var(--accent-amber); background: rgba(255,183,0,0.05); }
+
+/* MIND MAP */
+.mindmap-container {
+  background: var(--bg-deep); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; overflow-x: auto; margin: 12px 0;
+}
+.mindmap-container svg { display: block; margin: 0 auto; }
+.mindmap-container svg text { font-family: var(--font-mono); cursor: default; }
+.mindmap-container svg .node-main rect { rx: 8; ry: 8; }
+.mindmap-container svg .node-branch rect { rx: 6; ry: 6; }
+.mindmap-container svg .node-leaf rect { rx: 4; ry: 4; }
+.mindmap-container svg line { stroke-linecap: round; }
+.mm-clickable { cursor: pointer; }
+.mm-clickable:hover rect { filter: brightness(1.3); }
+.mm-hidden { display: none; }
+
+/* TABLE */
+.content table {
+  width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px;
+}
+.content th {
+  text-align: left; padding: 8px 12px;
+  background: var(--bg-elevated); color: var(--accent-cyan);
+  border: 1px solid var(--border); font-weight: 600;
+}
+.content td {
+  padding: 8px 12px; border: 1px solid var(--border); color: var(--text-secondary);
+}
+
+/* SEARCH HIGHLIGHT */
+.highlight { background: rgba(255,183,0,0.25); color: var(--accent-amber); border-radius: 2px; padding: 0 2px; }
+.search-hidden { display: none !important; }
+
+/* SCAN LINES OVERLAY */
+.scanlines {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  opacity: 0.4;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); z-index: 950; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 20px 16px 60px; }
+  .btn-menu { display: flex; }
+  .header-logo span.dim { display: none; }
+  .search-box { max-width: 200px; }
+}
+@media (max-width: 600px) {
+  .search-box { display: none; }
+  .theme-number { font-size: 28px; }
+  .theme-title { font-size: 18px; }
+}
+
+/* OVERLAY for mobile */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 940;
+}
+.sidebar-overlay.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="btn-icon btn-menu" onclick="toggleSidebar()" aria-label="Menu">&#9776;</button>
+  <div class="header-logo">
+    <span>PAS</span><span class="dim">@uco:~$</span><span class="blink">_</span>
+  </div>
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar conceptos, comandos..." oninput="handleSearch(this.value)">
+  </div>
+  <div class="progress-counter" id="progressCounter">0/9</div>
+  <div class="header-actions">
+    <button class="btn-icon" onclick="toggleScanlines()" title="Scanlines">&#9638;</button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Temas</div>
+    <a class="nav-item active" href="#tema1" onclick="navTo(this)"><span class="nav-num">01</span>Software Libre<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema2" onclick="navTo(this)"><span class="nav-num">02</span>Organizacion SO<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema3" onclick="navTo(this)"><span class="nav-num">03</span>Usuarios<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema4" onclick="navTo(this)"><span class="nav-num">04</span>Arranque<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema5" onclick="navTo(this)"><span class="nav-num">05</span>Recursos<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema6" onclick="navTo(this)"><span class="nav-num">06</span>SF y Discos<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema7" onclick="navTo(this)"><span class="nav-num">07</span>Admin SF<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema8" onclick="navTo(this)"><span class="nav-num">08</span>Backup<span class="check-dot"></span></a>
+    <a class="nav-item" href="#tema9" onclick="navTo(this)"><span class="nav-num">09</span>Comunicaciones<span class="check-dot"></span></a>
+  </div>
+  <div class="sidebar-progress">
+    <div class="progress-text"><span>Progreso</span><span id="progressPercent">0%</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="mainContent">
+
+<!-- ===================== TEMA 1 ===================== -->
+<section class="theme-section" id="tema1">
+  <div class="theme-header">
+    <div class="theme-number">01</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Introduccion al Software Libre y GNU/Linux</div>
+      <div class="theme-subtitle">Administracion de Sistemas + VirtualBox + Proyecto</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="1" onchange="saveProgress()">
+  </div>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Teoria</span>
+      <span class="collapsible-tag tag-teoria">TEORIA</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Generaciones de los Sistemas Operativos</h3>
+      <ul>
+        <li><strong>1a Generacion (1945-1955):</strong> Ordenadores voluminosos, tarjetas perforadas. No existia SO, el operario introducia el codigo.</li>
+        <li><strong>2a Generacion (1955-1968):</strong> Transistores, JCL, lenguajes de alto/bajo nivel, superusuarios, dispositivos E/S.</li>
+        <li><strong>3a Generacion (1968-1981):</strong> Circuitos integrados (LSI), equipos de proposito general, multiprogramacion, buffering, tiempo compartido.</li>
+        <li><strong>4a Generacion (1981-2001):</strong> VLSI, microprocesadores, <strong>ordenador personal</strong>, Plug and Play, cliente/servidor, maquinas virtuales.</li>
+        <li><strong>5a Generacion (2001-hoy):</strong> Tendencia a que personas no expertas manejen ordenadores.</li>
+      </ul>
+
+      <h3>Sistemas Operativos Historicos y Actuales</h3>
+      <ul>
+        <li><strong>UNIX:</strong> Multitarea, multiusuario. Laboratorios Bell de AT&T.</li>
+        <li><strong>Mac OS:</strong> Primer SO de Apple para Macintosh.</li>
+        <li><strong>Windows:</strong> SO grafico para PCs de Microsoft.</li>
+        <li><strong>Cuota actual:</strong> Android ~46%, Windows ~25%, iOS ~18%, OS X ~5%, Linux ~1.3%.</li>
+      </ul>
+
+      <h3>Software Libre</h3>
+      <h4>Historia</h4>
+      <ul>
+        <li><strong>Anos 60-70:</strong> Pocas computadoras (mainframes), software artesanal, codigo fuente compartido libremente.</li>
+        <li><strong>Anos 80:</strong> Software privativo se hace fuerte. <strong>Richard Stallman</strong> en 1984 comienza el proyecto GNU. En 1985 funda la <em>Free Software Foundation (FSF)</em>.</li>
+        <li><strong>Anos 90:</strong> En 1991 <strong>Linus Torvalds</strong> crea el primer nucleo de GNU/Linux.</li>
+      </ul>
+
+      <h4>Las 4 Libertades del Software Libre</h4>
+      <ul>
+        <li><strong>Libertad 0:</strong> <em>Usar</em> el programa, con cualquier proposito.</li>
+        <li><strong>Libertad 1:</strong> <em>Estudiar</em> como funciona y <em>adaptarlo</em>.</li>
+        <li><strong>Libertad 2:</strong> <em>Distribuir</em> copias.</li>
+        <li><strong>Libertad 3:</strong> <em>Mejorar</em> el programa y hacer publicas las mejoras.</li>
+      </ul>
+
+      <h4>Copyleft y Licencias</h4>
+      <p><strong>Copyleft:</strong> restriccion que impide distribuir copias o modificaciones restringiendo las 4 libertades.</p>
+      <table>
+        <tr><th>Con Copyleft</th><th>Sin Copyleft</th></tr>
+        <tr><td>GPL/AGPL, MPL, CC-sa</td><td>BSD, MIT, CC</td></tr>
+      </table>
+      <p><strong>Que NO es software libre:</strong> Software de dominio publico, semilibre, <em>freeware</em> (Edge, Adobe Reader), <em>shareware</em> (WinRAR), software con fuentes.</p>
+
+      <h3>GNU/Linux</h3>
+      <ul>
+        <li>1991: Linus Torvalds presenta la <strong>version 0.01</strong> del kernel.</li>
+        <li>1992: Se libera bajo <strong>licencia GPL</strong>.</li>
+        <li>1994: Version 1.0. 2003: Version 2.6 (~6M lineas). 2008: Android basado en Linux.</li>
+        <li>Es un SO <strong>libre</strong> (reimplementacion de UNIX, estandar POSIX), <strong>gratuito</strong>, mantenido por la comunidad.</li>
+      </ul>
+
+      <h3>El Sistema Informatico y la Organizacion</h3>
+      <p>El <strong>Departamento de Informatica</strong> se encarga de mantener y gestionar el Sistema Informatico:</p>
+      <ul>
+        <li><strong>Hardware:</strong> Servidores, PCs, cableado, centro de datos.</li>
+        <li><strong>Software:</strong> SO, aplicaciones empresariales, aplicaciones especificas.</li>
+        <li><strong>Personal:</strong> Responsable de Informatica + Personal Tecnico.</li>
+      </ul>
+      <p><strong>Funciones:</strong> Admin servidores, admin usuarios, admin red, admin datos, admin web, seguridad, desarrollo.</p>
+
+      <h3>Rol del Administrador de Sistemas</h3>
+      <p>Persona responsable de <strong>implementar, configurar, mantener, monitorizar, documentar y asegurar</strong> el sistema informatico.</p>
+      <p>Cualidades: <strong>Autoridad + responsabilidad + servicio + cooperacion</strong>.</p>
+
+      <h4>Tareas Detalladas</h4>
+      <ul>
+        <li><strong>Hardware:</strong> Entorno fisico, cortes de suministro, reparar componentes, redes.</li>
+        <li><strong>Software:</strong> Instalar SO, detectar problemas, configurar aplicaciones, documentar.</li>
+        <li><strong>Soporte:</strong> Formar usuarios, proporcionar soporte, sistema de rastreo (tickets).</li>
+        <li><strong>Servicios:</strong> Cuentas de usuario, politicas, servicio de nombres, servidores web.</li>
+        <li><strong>Seguridad:</strong> Cuotas de disco, logs, firewalls, alertas CERT.</li>
+        <li><strong>Backups:</strong> Estrategia, software, automatizar, planes de supervivencia.</li>
+      </ul>
+
+      <h4>Estrategia General</h4>
+      <ol>
+        <li><strong>Planear</strong> antes de hacer los cambios.</li>
+        <li>Hacer los cambios <strong>reversibles</strong>.</li>
+        <li>Realizar cambios de forma <strong>incremental</strong>.</li>
+        <li><strong>Probar, probar, probar</strong>.</li>
+        <li>Conocer <strong>realmente como</strong> trabajan las cosas.</li>
+      </ol>
+
+      <h3>VirtualBox y Herramientas Basicas</h3>
+      <p>Virtualizacion de maquinas para practicas con Debian.</p>
+      <h4>El Superusuario</h4>
+      <ul>
+        <li><strong>root:</strong> Usuario con todos los privilegios. Home: <span class="key-concept">/root</span></li>
+        <li><span class="key-concept">su</span> pide contrasena de root para abrir shell con privilegios.</li>
+        <li><span class="key-concept">sudo</span> permite a otros usuarios ejecutar ordenes como administrador.</li>
+        <li>Configuracion: <span class="key-concept">/etc/sudoers</span> (editar con <span class="key-concept">visudo</span>).</li>
+      </ul>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">sudo</span> <span class="cmd">usermod</span> <span class="flag">-aG</span> sudo usuario
+<span class="comment"># Verificar</span>
+<span class="cmd">visudo</span></code></div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Ejercicios y Practica</span>
+      <span class="collapsible-tag tag-ejercicio">EJERCICIOS</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Proyecto: Instalar Debian en VirtualBox</h3>
+      <ol>
+        <li>Crear VM + disco (1-2GB RAM, 5GB disco).</li>
+        <li>Instalar sin entorno grafico. Marcar SSH.</li>
+        <li>Como root: <code>apt install sudo</code></li>
+        <li>Anadir usuario admin: <code>adduser adminpas</code> + <code>sudo /sbin/usermod -aG sudo adminpas</code></li>
+        <li>Configurar SSH: Red > Avanzada > Reenvio puertos (2222 anfitrion → 22 huesped).</li>
+        <li>Conectar: <code>ssh adminpas@localhost -p 2222</code></li>
+        <li>Explorar: <code>df</code>, <code>fdisk -l</code>, <code>free</code>, <code>cat /proc/cpuinfo</code></li>
+      </ol>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Mapa Mental</span>
+      <span class="collapsible-tag tag-mapa">MAPA</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <div class="mindmap-container" id="mm1"></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 2 ===================== -->
+<section class="theme-section" id="tema2">
+  <div class="theme-header">
+    <div class="theme-number">02</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Organizacion de un SO tipo GNU/Linux</div>
+      <div class="theme-subtitle">Ficheros, permisos, enlaces, estructura FHS</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="2" onchange="saveProgress()">
+  </div>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Teoria</span>
+      <span class="collapsible-tag tag-teoria">TEORIA</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Ficheros en GNU/Linux</h3>
+      <div class="info-box">"Si algo no es un fichero, entonces es un proceso"</div>
+      <ul>
+        <li>Programas: <span class="key-concept">/bin/ls</span>, <span class="key-concept">/usr/bin/find</span></li>
+        <li>Dispositivos I/O: <span class="key-concept">/dev/sda</span>, <span class="key-concept">/dev/tty0</span></li>
+        <li>Comunicacion entre procesos: <em>sockets</em>, <em>pipes</em></li>
+        <li>Estructura jerarquica: <span class="key-concept">/</span> = directorio raiz</li>
+      </ul>
+
+      <h3>Nodos-i</h3>
+      <p><strong>Nodos-i</strong> = metadatos de los ficheros: tamano, permisos, posicion sectores, numero de enlaces. Cada fichero tiene un nodo-i unico. Ver con <code>ls -i</code> o <code>df -i</code>.</p>
+
+      <h3>Gestion del Acceso: Propietarios y Permisos</h3>
+      <p>Cada fichero tiene dos propietarios: <strong>usuario</strong> y <strong>grupo</strong>.</p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">chown</span> javi fichero              <span class="comment"># Cambiar usuario propietario</span>
+<span class="cmd">chown</span> javi:profesores fichero   <span class="comment"># Cambiar usuario:grupo</span>
+<span class="cmd">chgrp</span> profesores fichero         <span class="comment"># Cambiar grupo</span></code></div>
+
+      <h4>Permisos rwx</h4>
+      <table>
+        <tr><th>Acceso</th><th>Fichero</th><th>Directorio</th></tr>
+        <tr><td><strong>r</strong></td><td>Ver contenido</td><td>Listar contenido</td></tr>
+        <tr><td><strong>w</strong></td><td>Modificar contenido</td><td>Crear/eliminar ficheros</td></tr>
+        <tr><td><strong>x</strong></td><td>Ejecutar fichero</td><td>Entrar (cd) en el directorio</td></tr>
+      </table>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">chmod</span> u+r fichero             <span class="comment"># Modo simbolico</span>
+<span class="cmd">chmod</span> u=rwx,go= fichero       <span class="comment"># Modo simbolico</span>
+<span class="cmd">chmod</span> <span class="flag">-R</span> u+rwx,go-rwx dir    <span class="comment"># Recursivo</span>
+<span class="cmd">chmod</span> 740 fichero              <span class="comment"># Modo absoluto: u+rwx,g+r,o-rwx</span></code></div>
+
+      <h3>Permisos Especiales</h3>
+      <ul>
+        <li><strong>suid</strong> (<code>chmod u+s</code>): en ejecutables, se ejecuta como el propietario del fichero. Ej: <code>/usr/bin/passwd</code> tiene <code>-rwsr-xr-x</code>.</li>
+        <li><strong>sgid</strong> (<code>chmod g+s</code>): en ejecutables, grupo efectivo = grupo del fichero. En directorios, nuevos ficheros heredan el grupo del directorio.</li>
+        <li><strong>sticky bit</strong> (<code>chmod o+t</code>): en directorios, solo root o el propietario pueden borrar/renombrar. Ej: <code>/tmp</code>.</li>
+      </ul>
+
+      <h3>Mascara de Permisos (umask)</h3>
+      <p>Base: directorios 777, ficheros 666. La mascara <strong>resta</strong> permisos.</p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">umask</span>          <span class="comment"># Ver mascara actual (ej: 0022)</span>
+<span class="cmd">umask</span> 027       <span class="comment"># Cambiar: dir=750, fich=640</span></code></div>
+
+      <h3>Tipos de Ficheros</h3>
+      <ul>
+        <li><strong>Normal</strong> (-), <strong>Directorio</strong> (d), <strong>Bloque</strong> (b), <strong>Caracter</strong> (c)</li>
+        <li><strong>Named Pipes</strong> (p), <strong>Socket</strong> (s), <strong>Enlace simbolico</strong> (l)</li>
+      </ul>
+
+      <h3>Enlaces</h3>
+      <h4>Enlace Fisico (hard link)</h4>
+      <ul>
+        <li>Dos nombres apuntando al mismo nodo-i. <code>ln archivo enlace</code></li>
+        <li>Solo dentro de la misma particion. No se puede hacer a directorios.</li>
+      </ul>
+      <h4>Enlace Simbolico (symlink)</h4>
+      <ul>
+        <li>Puntero virtual (acceso directo). <code>ln -s archivo enlace</code></li>
+        <li>Nodo-i independiente, contiene la ruta del archivo.</li>
+      </ul>
+
+      <h3>Dispositivos</h3>
+      <ul>
+        <li><span class="key-concept">/dev/sda</span> = primer disco duro, <span class="key-concept">/dev/sda1</span> = primera particion</li>
+        <li><span class="key-concept">/dev/tty1</span> = primera terminal, <span class="key-concept">/dev/nvme0n1</span> = disco NVMe</li>
+      </ul>
+
+      <h3>Estructura FHS (Filesystem Hierarchy Standard)</h3>
+      <table>
+        <tr><th>Directorio</th><th>Contenido</th></tr>
+        <tr><td>/bin</td><td>Ejecutables basicos (mv, cp)</td></tr>
+        <tr><td>/dev</td><td>Ficheros especiales de dispositivos</td></tr>
+        <tr><td>/etc</td><td>Configuracion local del sistema</td></tr>
+        <tr><td>/home</td><td>Directorios de trabajo de usuarios</td></tr>
+        <tr><td>/lib</td><td>Bibliotecas necesarias</td></tr>
+        <tr><td>/proc, /sys</td><td>SF virtuales (procesos, nucleo)</td></tr>
+        <tr><td>/tmp</td><td>Ficheros temporales (sticky bit)</td></tr>
+        <tr><td>/var</td><td>Datos variables (logs, spool, mail)</td></tr>
+        <tr><td>/boot</td><td>Nucleo y configuracion arranque</td></tr>
+        <tr><td>/usr</td><td>Subdirs de solo lectura (bin, sbin, lib, share, local, src)</td></tr>
+        <tr><td>/root</td><td>HOME del administrador</td></tr>
+        <tr><td>/opt</td><td>Aplicaciones estaticas</td></tr>
+        <tr><td>/mnt, /media</td><td>Montaje de otros SF</td></tr>
+      </table>
+      <p><strong>Estaticos:</strong> /bin, /sbin, /opt, /boot. <strong>Dinamicos:</strong> /var, /home. <strong>Compartibles:</strong> /usr/bin, /opt. <strong>No compartibles:</strong> /etc, /boot, /var/run.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Ejercicios</span>
+      <span class="collapsible-tag tag-ejercicio">EJERCICIOS</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Practica de Permisos</h3>
+      <ol>
+        <li>Establece permisos de escritura solo para el usuario propietario, lectura para todos, ejecucion para usuario y grupo.</li>
+        <li>Practica con modo simbolico y absoluto.</li>
+        <li>Crea enlaces fisicos y simbolicos y observa los nodos-i con <code>ls -li</code>.</li>
+      </ol>
+      <p><strong>PDFs de ejercicios:</strong></p>
+      <a class="file-link" href="Ejercicios/tema02-ejercicios.pdf">&#128196; tema02-ejercicios.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 2.pdf">&#9989; Ejercicios Tema 2 (Resueltos)</a>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      <span class="collapsible-icon">&#9654;</span>
+      <span class="collapsible-label">Mapa Mental</span>
+      <span class="collapsible-tag tag-mapa">MAPA</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm2"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 3 ===================== -->
+<section class="theme-section" id="tema3">
+  <div class="theme-header">
+    <div class="theme-number">03</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Gestion de Usuarios</div>
+      <div class="theme-subtitle">passwd, shadow, grupos, contrasenas, herramientas</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="3" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Ficheros Basicos</h3>
+      <ul>
+        <li><span class="key-concept">/etc/passwd</span> - Cuentas de usuarios (rw-r--r--).</li>
+        <li><span class="key-concept">/etc/shadow</span> - Hashes de contrasenas (rw-r----- root:shadow).</li>
+        <li><span class="key-concept">/etc/group</span> - Grupos y miembros.</li>
+        <li><span class="key-concept">/etc/gshadow</span> - Contrasenas de grupos cifradas.</li>
+      </ul>
+      <h4>Formato /etc/passwd</h4>
+      <div class="code-block" data-lang="text"><code>nombre:password:uid:gid:gecos:home:shell
+tux:x:1001:100:The Linux penguin:/home/tux:/bin/bash</code></div>
+      <p><strong>password:</strong> "!!" = bloqueada, "*" = desactivada, "x" = shadow activas.</p>
+      <h4>Shadow Passwords</h4>
+      <p>Contrasenas cifradas en <code>/etc/shadow</code> con hash + salt. Formato: <code>$id[$params]$salt$hash</code></p>
+      <table>
+        <tr><th>ID</th><th>Algoritmo</th></tr>
+        <tr><td>$1$</td><td>MD5 (128 bits, obsoleto)</td></tr>
+        <tr><td>$5$</td><td>SHA-256</td></tr>
+        <tr><td>$6$</td><td>SHA-512</td></tr>
+        <tr><td>$y$</td><td>yescrypt (moderno, recomendado)</td></tr>
+      </table>
+      <h4>Restricciones de Tiempo (/etc/shadow)</h4>
+      <p>Formato: <code>nom:pass:changed:minlife:maxlife:warn:inactive:expired:unused</code></p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">chage</span> <span class="flag">-M</span> 20 pagutierrez    <span class="comment"># Max dias sin cambiar pass</span>
+<span class="cmd">chage</span> <span class="flag">-W</span> 6 pagutierrez     <span class="comment"># Aviso dias antes de expirar</span>
+<span class="cmd">chage</span> <span class="flag">-I</span> 5 pagutierrez     <span class="comment"># Dias inactividad tras expirar</span>
+<span class="cmd">chage</span> <span class="flag">-E</span> 2026-10-30 pagutierrez <span class="comment"># Fecha expiracion cuenta</span>
+<span class="cmd">chage</span> <span class="flag">-l</span> usuario          <span class="comment"># Consultar parametros</span></code></div>
+      <h3>Ficheros de Inicializacion</h3>
+      <p><span class="key-concept">/etc/skel/</span> = ficheros copiados automaticamente a cada $HOME nuevo.</p>
+      <table>
+        <tr><th>Operacion</th><th>bash</th></tr>
+        <tr><td>login</td><td>.bash_profile + .profile</td></tr>
+        <tr><td>ejecuta shell</td><td>.bashrc</td></tr>
+        <tr><td>logout</td><td>.bash_logout</td></tr>
+      </table>
+      <h3>Cuentas Restrictivas</h3>
+      <ul>
+        <li>Shell = fichero ejecutable: al entrar se ejecuta, al terminar sale.</li>
+        <li><span class="key-concept">rbash</span> (/bin/rbash): no puede cambiar directorio, ni modificar $PATH, ni usar redirecciones.</li>
+        <li>Asignar <code>/bin/false</code> o <code>/sbin/nologin</code> para impedir login.</li>
+      </ul>
+      <h3>Anadir Usuarios al Sistema</h3>
+      <ol>
+        <li>Decidir nombre, UID, grupos (primario + secundarios).</li>
+        <li>Introducir datos en /etc/passwd y /etc/group.</li>
+        <li>Asignar password.</li>
+        <li>Escribir contrasena en shadow (pwck).</li>
+        <li>Establecer parametros de envejecimiento.</li>
+        <li>Crear $HOME, propietario y permisos.</li>
+        <li>Copiar ficheros desde /etc/skel/.</li>
+      </ol>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">adduser</span> usuario          <span class="comment"># Crear usuario (interactivo)</span>
+<span class="cmd">useradd</span> usuario          <span class="comment"># Crear (mas bajo nivel)</span>
+<span class="cmd">usermod</span> <span class="flag">-aG</span> grupo user  <span class="comment"># Anadir a grupo</span>
+<span class="cmd">deluser</span> usuario          <span class="comment"># Eliminar (no borra $HOME)</span></code></div>
+      <h3>Grupos</h3>
+      <p>Colecciones de usuarios que comparten recursos. Fichero: <span class="key-concept">/etc/group</span> (nombre:x:gid:lista usuarios).</p>
+      <ul>
+        <li><strong>Primario:</strong> especificado en /etc/passwd. <strong>Secundarios:</strong> en /etc/group.</li>
+        <li><strong>Grupo activo:</strong> al crear ficheros, se usa el grupo activo (normalmente el primario).</li>
+      </ul>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">addgroup</span> grupo     <span class="cmd">groupmod</span> grupo     <span class="cmd">delgroup</span> grupo
+<span class="cmd">groups</span> [usuario]    <span class="cmd">id</span> [usuario]       <span class="cmd">newgrp</span> grupo</code></div>
+      <h3>Usuarios Estandar</h3>
+      <ul>
+        <li><strong>uid 0-99:</strong> usuarios del propio SO (root=0).</li>
+        <li><strong>uid 100-499:</strong> servicios o programas (bin, daemon, mail, ftp, postgres).</li>
+        <li><strong>uid >= 1000:</strong> usuarios normales.</li>
+        <li><strong>nobody/nfsnobody:</strong> usuario sin privilegios (NFS).</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Practica</h3>
+      <ol>
+        <li>Consulta los permisos de /etc/passwd, /etc/shadow, /etc/group.</li>
+        <li>Consulta caducidad con <code>chage -l usuario</code>.</li>
+        <li>Cambia la caducidad y prueba el resultado.</li>
+        <li>Anade alias utiles a .bashrc.</li>
+        <li>Prueba con <code>cracklib-check</code> la robustez de contrasenas.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema3.pdf">&#128196; EjerciciosTema3.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 3.pdf">&#9989; Ejercicios Tema 3 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm3"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 4 ===================== -->
+<section class="theme-section" id="tema4">
+  <div class="theme-header">
+    <div class="theme-number">04</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Arranque y Parada del Sistema y Servicios</div>
+      <div class="theme-subtitle">Boot, GRUB, init, systemd, niveles de ejecucion</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="4" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Proceso de Arranque</h3>
+      <div class="info-box">Power ON &rarr; BIOS/UEFI &rarr; Boot Loader (GRUB) &rarr; Kernel &rarr; initrd &rarr; init/systemd (PID=1) &rarr; Sistema operativo</div>
+      <h4>BIOS vs UEFI</h4>
+      <ul>
+        <li><strong>BIOS:</strong> BIOS &rarr; MBR &rarr; Boot Loader &rarr; Kernel &rarr; OS</li>
+        <li><strong>UEFI:</strong> UEFI &rarr; EFI Boot Loader &rarr; Kernel &rarr; OS</li>
+      </ul>
+      <h4>Programa Cargador (MBR)</h4>
+      <p>En los primeros sectores del disco. Carga el nucleo del SO.</p>
+      <h4>initrd (init RAM Disk)</h4>
+      <p>Contiene modulos del nucleo necesarios para leer del disco. El nucleo carga primero el initrd, luego los modulos, y continua el arranque.</p>
+      <h3>GRUB (GRand Unified Bootloader)</h3>
+      <ul>
+        <li>Configuracion: <span class="key-concept">/etc/default/grub</span></li>
+        <li>Scripts: <span class="key-concept">/etc/grub.d/</span></li>
+        <li>Archivo generado: <code>/boot/grub/grub.cfg</code> (NO editar a mano)</li>
+        <li>Regenerar: <code>sudo update-grub2</code></li>
+      </ul>
+      <div class="code-block" data-lang="config"><code>GRUB_DEFAULT=0
+GRUB_TIMEOUT=10
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_TERMINAL=console
+GRUB_BACKGROUND="/boot/bg.png"</code></div>
+      <h3>Modo Monousuario vs Multiusuario</h3>
+      <ul>
+        <li><strong>Monousuario:</strong> tareas administrativas, solo monta /, pocos demonios, shell como root.</li>
+        <li><strong>Problema!</strong> Si en GRUB ponemos <code>init=/bin/bash</code>, no se llama a sulogin. Solucion: contrasena en GRUB.</li>
+      </ul>
+      <h3>Niveles de Ejecucion</h3>
+      <table>
+        <tr><th>Nivel</th><th>systemd target</th><th>Descripcion</th></tr>
+        <tr><td>0</td><td>poweroff.target</td><td>Sistema apagado</td></tr>
+        <tr><td>1, s</td><td>rescue.target</td><td>Monousuario</td></tr>
+        <tr><td>2-4</td><td>multi-user.target</td><td>Multiusuario con red</td></tr>
+        <tr><td>5</td><td>graphical.target</td><td>Multiusuario + GUI</td></tr>
+        <tr><td>6</td><td>reboot.target</td><td>Reiniciandose</td></tr>
+      </table>
+      <h3>systemd</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">systemctl</span> start|stop|restart|status servicio
+<span class="cmd">systemctl</span> enable|disable servicio
+<span class="cmd">systemctl</span> list-units <span class="flag">--type=service</span>
+<span class="cmd">systemctl</span> set-default multi-user.target
+<span class="cmd">systemctl</span> isolate rescue.target
+<span class="cmd">journalctl</span> <span class="flag">-xe</span>    <span class="comment"># Ver logs</span></code></div>
+      <h3>Parada del Sistema</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">shutdown</span> <span class="flag">-h</span> now    <span class="comment"># Apagar ahora</span>
+<span class="cmd">shutdown</span> <span class="flag">-r</span> +5     <span class="comment"># Reiniciar en 5 min</span>
+<span class="cmd">shutdown</span> <span class="flag">-c</span>         <span class="comment"># Cancelar</span></code></div>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Cambia la imagen de fondo de GRUB.</li>
+        <li>Cambia el timeout.</li>
+        <li>Anade contrasena a GRUB con <code>grub-mkpasswd-pbkdf2</code>.</li>
+        <li>Deshabilita Ctrl+Alt+Del.</li>
+        <li>Practica con systemctl: lista servicios, habilita/deshabilita.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema4.pdf">&#128196; EjerciciosTema4.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 4.pdf">&#9989; Ejercicios Tema 4 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm4"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 5 ===================== -->
+<section class="theme-section" id="tema5">
+  <div class="theme-header">
+    <div class="theme-number">05</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Gestion de Recursos del Sistema</div>
+      <div class="theme-subtitle">Procesos, CPU, memoria, disco, cron</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="5" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Procesos en GNU/Linux</h3>
+      <p><strong>Proceso:</strong> programa en ejecucion. La CPU ejecuta un proceso a la vez por nucleo, conmutando rapidamente (cuanto ~100ms).</p>
+      <h4>Modos de Ejecucion</h4>
+      <ul>
+        <li><strong>Modo usuario:</strong> codigo normal del programa.</li>
+        <li><strong>Modo nucleo:</strong> llamadas al sistema, excepciones, interrupciones.</li>
+      </ul>
+      <h4>Tipos de Procesos</h4>
+      <ul>
+        <li><strong>Usuario:</strong> creados por usuario real, modo usuario.</li>
+        <li><strong>Demonio:</strong> no asociados a usuario, tareas periodicas (cron, redes...).</li>
+        <li><strong>Nucleo:</strong> codigo del kernel, siempre en modo nucleo.</li>
+      </ul>
+      <h3>ps: Monitorizacion de Procesos</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">ps</span> aux              <span class="comment"># Todos los procesos, todos los usuarios</span>
+<span class="cmd">ps</span> al               <span class="comment"># Formato largo</span>
+<span class="cmd">ps</span> aux | <span class="cmd">grep</span> apache</code></div>
+      <h4>Estados de Procesos (STAT)</h4>
+      <table>
+        <tr><th>Estado</th><th>Descripcion</th></tr>
+        <tr><td><strong>R</strong></td><td>En ejecucion (running)</td></tr>
+        <tr><td><strong>S</strong></td><td>Durmiendo (interruptible)</td></tr>
+        <tr><td><strong>D</strong></td><td>Durmiendo ininterrumpible (E/S)</td></tr>
+        <tr><td><strong>Z</strong></td><td>Zombie (terminado, padre no recogio codigo)</td></tr>
+        <tr><td><strong>T</strong></td><td>Parado (senal o trace)</td></tr>
+        <tr><td><strong>I</strong></td><td>Idle (hilo del nucleo ocioso)</td></tr>
+      </table>
+      <h3>Prioridad (nice)</h3>
+      <p>Rango: <strong>-20</strong> (maxima prioridad) a <strong>19</strong> (minima). Solo root puede usar valores negativos.</p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">nice</span> <span class="flag">-5</span> nautilus         <span class="comment"># Lanzar con nice +5</span>
+<span class="cmd">nice</span> <span class="flag">--10</span> nautilus       <span class="comment"># Lanzar con nice -10 (solo root)</span>
+<span class="cmd">renice</span> 14 890             <span class="comment"># Cambiar prioridad del PID 890</span>
+<span class="cmd">renice</span> 5 <span class="flag">-u</span> pedroa       <span class="comment"># Todos los procesos del usuario</span></code></div>
+      <h3>Senales POSIX</h3>
+      <table>
+        <tr><th>#</th><th>Nombre</th><th>Descripcion</th><th>Capturable</th></tr>
+        <tr><td>1</td><td>HUP</td><td>Reiniciar demonio / cerrar terminal</td><td>Si</td></tr>
+        <tr><td>2</td><td>INT</td><td>Interrumpir (Ctrl+C)</td><td>Si</td></tr>
+        <tr><td>9</td><td>KILL</td><td>Matar proceso (forzado)</td><td><strong>No</strong></td></tr>
+        <tr><td>15</td><td>TERM</td><td>Terminar software (por defecto)</td><td>Si</td></tr>
+        <tr><td>17</td><td>STOP</td><td>Parar proceso</td><td><strong>No</strong></td></tr>
+        <tr><td>18</td><td>TSTP</td><td>Parar (Ctrl+Z)</td><td>Si</td></tr>
+        <tr><td>19</td><td>CONT</td><td>Continuar</td><td>Si</td></tr>
+      </table>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">kill</span> <span class="flag">-9</span> PID     <span class="cmd">killall</span> nombre    <span class="cmd">pkill</span> nombre
+<span class="cmd">fg</span>  <span class="comment"># Volver a foreground</span>     <span class="cmd">bg</span>  <span class="comment"># Volver a background</span></code></div>
+      <h3>Monitorizacion</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">uptime</span>            <span class="comment"># Carga media (1, 5, 15 min)</span>
+<span class="cmd">top</span>               <span class="comment"># Monitor interactivo (h=ayuda, k=kill, r=renice)</span>
+<span class="cmd">pstree</span>            <span class="comment"># Arbol de procesos</span>
+<span class="cmd">vmstat</span> 2 5         <span class="comment"># Estadisticas CPU/memoria cada 2s, 5 veces</span></code></div>
+      <h3>Programacion de Tareas</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">at</span> now + 5 minutes    <span class="comment"># Ejecutar una vez en 5 min</span>
+<span class="cmd">crontab</span> <span class="flag">-e</span>             <span class="comment"># Editar tareas periodicas</span>
+<span class="comment"># min hora dia mes diasem comando</span>
+30 2 * * * <span class="path">/usr/local/bin/backup.sh</span></code></div>
+      <h3>Memoria</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">free</span> <span class="flag">-h</span>      <span class="comment"># Memoria libre</span>
+<span class="cmd">vmstat</span>        <span class="comment"># Memoria virtual</span></code></div>
+      <h3>Disco</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">df</span> <span class="flag">-h</span>       <span class="comment"># Espacio en disco por particion</span>
+<span class="cmd">du</span> <span class="flag">-sh</span> dir   <span class="comment"># Tamano de directorio</span>
+<span class="cmd">iostat</span>        <span class="comment"># Rendimiento de discos</span></code></div>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Lista procesos con <code>ps aux</code> y busca apache.</li>
+        <li>Cambia la prioridad de un proceso con renice.</li>
+        <li>Usa top: monitoriza un usuario, ordena por memoria.</li>
+        <li>Programa una tarea con crontab.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema5.pdf">&#128196; EjerciciosTema5.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 5.pdf">&#9989; Ejercicios Tema 5 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm5"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 6 ===================== -->
+<section class="theme-section" id="tema6">
+  <div class="theme-header">
+    <div class="theme-number">06</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Sistemas de Ficheros y Discos</div>
+      <div class="theme-subtitle">HDD, SSD, particiones, bloques, VFS, asignacion</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="6" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>HDD vs SSD vs NVMe</h3>
+      <ul>
+        <li><strong>HDD:</strong> Platos magneticos, cabezal, pistas, cilindros, sectores. Acceso mecanico.</li>
+        <li><strong>SSD:</strong> Memoria NAND flash, sin partes moviles, mas rapido.</li>
+        <li><strong>NVMe:</strong> SSD con interfaz PCIe directa, maxima velocidad.</li>
+      </ul>
+      <h3>Sistema de Archivos (SA/SF)</h3>
+      <p>Organiza la informacion en dispositivos de almacenamiento. Division logica: <strong>Particiones &rarr; Agrupaciones &rarr; Bloques</strong>.</p>
+      <h4>Tamano de Bloque</h4>
+      <ul>
+        <li><strong>Pequeno:</strong> mas operaciones E/S, menor fragmentacion.</li>
+        <li><strong>Grande:</strong> menos operaciones E/S, mayor fragmentacion.</li>
+        <li>Ver con <code>stat -f .</code></li>
+      </ul>
+      <h3>Estructura del Sistema de Archivos</h3>
+      <ul>
+        <li><strong>Bloque de carga (boot/VBR):</strong> codigo de arranque de la particion.</li>
+        <li><strong>Superbloque:</strong> caracteristicas del SA (tamano, posiciones, etc). Copias de seguridad en varias posiciones del disco.</li>
+        <li><strong>Mapas de bits:</strong> indican bloques y nodos-i libres.</li>
+        <li><strong>Descriptores (nodos-i):</strong> metadatos de cada archivo (tamano, permisos, apuntadores a bloques).</li>
+        <li><strong>Bloques de datos:</strong> donde se almacena la informacion.</li>
+      </ul>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">sudo</span> <span class="cmd">dumpe2fs</span> <span class="flag">-h</span> <span class="path">/dev/nvme0n1p3</span>   <span class="comment"># Info superbloque</span>
+<span class="cmd">stat</span> <span class="path">/etc/passwd</span>                          <span class="comment"># Info nodo-i</span>
+<span class="cmd">ls</span> <span class="flag">-i</span> <span class="path">/etc/passwd</span>                       <span class="comment"># Ver nodo-i</span></code></div>
+      <h3>Servidor de Archivos (4 capas)</h3>
+      <ol>
+        <li><strong>VFS (Virtual File System):</strong> interfaz comun para todos los SA.</li>
+        <li><strong>Modulo de organizacion:</strong> traduce direcciones logicas a fisicas.</li>
+        <li><strong>Servidor de bloques:</strong> E/S de bloques + cache.</li>
+        <li><strong>Manejadores de dispositivos:</strong> especificos por hardware.</li>
+      </ol>
+      <h3>Asignacion de Bloques</h3>
+      <ul>
+        <li><strong>Contigua:</strong> bloques seguidos (simple pero fragmentacion externa).</li>
+        <li><strong>Enlazada (FAT):</strong> cada bloque apunta al siguiente.</li>
+        <li><strong>Indexada (nodos-i):</strong> apuntadores directos + indirectos (simple, doble, triple).</li>
+      </ul>
+      <h3>Gestion del Espacio Libre</h3>
+      <ul>
+        <li><strong>Mapas de bits:</strong> un bit por bloque (0=libre, 1=ocupado).</li>
+        <li><strong>Listas de recursos libres.</strong></li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Explora discos con <code>lsblk</code> y <code>sudo fdisk -l</code>.</li>
+        <li>Consulta info del superbloque con <code>dumpe2fs</code>.</li>
+        <li>Usa <code>stat</code> para ver informacion de nodos-i.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema6.pdf">&#128196; EjerciciosTema6.pdf</a>
+      <a class="file-link" href="Ejercicios/EjerciciosTema6_adicc.pdf">&#128196; EjerciciosTema6_adicc.pdf</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm6"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 7 ===================== -->
+<section class="theme-section" id="tema7">
+  <div class="theme-header">
+    <div class="theme-number">07</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Administracion de Sistemas de Ficheros</div>
+      <div class="theme-subtitle">mount, fstab, fsck, journaling, LVM, RAID, cuotas</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="7" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Montaje y Desmontaje</h3>
+      <p><strong>Montar</strong> = anadirlo al arbol de directorios. <strong>Desmontar</strong> = dejarlo consistente y desconectarlo.</p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">mount</span> <span class="path">/dev/sdb1</span> <span class="path">/punto/montaje</span>
+<span class="cmd">mount</span> LABEL=etiqueta <span class="path">/punto/montaje</span>
+<span class="cmd">mount</span> UUID=a244... <span class="path">/punto/montaje</span>
+<span class="cmd">umount</span> <span class="path">/punto/montaje</span></code></div>
+      <h4>/etc/fstab</h4>
+      <p>Configuracion de montaje permanente. Se lee al arrancar.</p>
+      <h3>Receta: Anadir un Disco</h3>
+      <ol>
+        <li>Apagar, conectar disco, encender.</li>
+        <li><code>lsblk</code> para identificar (ej: /dev/sdb).</li>
+        <li>Particionar: <code>sudo fdisk /dev/sdb</code> o <code>cfdisk</code>.</li>
+        <li>Crear SF: <code>sudo mkfs -t ext4 -L etiqueta /dev/sdb1</code></li>
+        <li>Crear punto de montaje: <code>sudo mkdir /punto/montaje</code></li>
+        <li>Montar: <code>sudo mount /dev/sdb1 /punto/montaje</code></li>
+        <li>Para permanente: editar <code>/etc/fstab</code>.</li>
+      </ol>
+      <h3>Comprobacion SF</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">fsck</span> <span class="path">/dev/sda1</span>       <span class="comment"># Comprobar (particion desmontada!)</span>
+<span class="cmd">e2fsck</span> <span class="flag">-f</span> <span class="path">/dev/sda1</span>   <span class="comment"># Forzar comprobacion ext</span></code></div>
+      <h3>Journaling</h3>
+      <p>ext3/ext4 usan <strong>journaling</strong>: registro de transacciones pendientes para recuperacion rapida tras caida.</p>
+      <h3>Creacion de Sistemas de Ficheros</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">mkfs</span> <span class="flag">-t</span> ext4 <span class="path">/dev/sdb1</span>
+<span class="cmd">mkfs</span> <span class="flag">-t</span> xfs <span class="path">/dev/sdb1</span>
+<span class="cmd">mkfs</span> <span class="flag">-t</span> btrfs <span class="path">/dev/sdb1</span></code></div>
+      <h3>RAID</h3>
+      <table>
+        <tr><th>Nivel</th><th>Descripcion</th><th>Min discos</th><th>Tolerancia</th></tr>
+        <tr><td>RAID 0</td><td>Striping (velocidad, sin redundancia)</td><td>2</td><td>Ninguna</td></tr>
+        <tr><td>RAID 1</td><td>Mirroring (espejo)</td><td>2</td><td>1 disco</td></tr>
+        <tr><td>RAID 5</td><td>Striping + paridad distribuida</td><td>3</td><td>1 disco</td></tr>
+      </table>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">sudo</span> <span class="cmd">mdadm</span> <span class="flag">--create --verbose</span> <span class="path">/dev/md0</span> <span class="flag">--level=5 --raid-devices=3</span> <span class="path">/dev/sdb /dev/sdc /dev/sdd</span>
+<span class="cmd">cat</span> <span class="path">/proc/mdstat</span>     <span class="comment"># Estado del RAID</span>
+<span class="cmd">sudo</span> <span class="cmd">mkfs.ext4</span> <span class="flag">-F</span> <span class="path">/dev/md0</span></code></div>
+      <h3>Cuotas de Disco</h3>
+      <p>Restringir espacio y ficheros por usuario/grupo.</p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">edquota</span> <span class="flag">-u</span> usuario    <span class="comment"># Editar cuotas de usuario</span>
+<span class="cmd">repquota</span> <span class="flag">-a</span>           <span class="comment"># Informe de cuotas</span>
+<span class="cmd">quotacheck</span> <span class="flag">-a</span>         <span class="comment"># Verificar</span></code></div>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Anade un disco en VirtualBox, particiona con fdisk, formatea con mkfs, monta.</li>
+        <li>Configura el montaje permanente en /etc/fstab.</li>
+        <li>Crea un RAID 5 con mdadm (3 discos).</li>
+        <li>Configura cuotas de disco.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema7.pdf">&#128196; EjerciciosTema7.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 7.pdf">&#9989; Ejercicios Tema 7 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm7"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 8 ===================== -->
+<section class="theme-section" id="tema8">
+  <div class="theme-header">
+    <div class="theme-number">08</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Restauracion y Copias de Seguridad</div>
+      <div class="theme-subtitle">Prevencion, estrategias, tar, dump, rsync</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="8" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Planes de Prevencion de Catastrofes</h3>
+      <div class="info-box">El administrador debe: planear, implementar copias periodicamente, guardar copias en lugar seguro.</div>
+      <p>Determinar: <strong>que</strong> copiar, <strong>donde</strong>, <strong>como</strong> y <strong>cuando</strong>.</p>
+      <h4>Escenarios de Perdida</h4>
+      <ul>
+        <li>Errores humanos (borrar ficheros por accidente).</li>
+        <li>Virus y software destructivo.</li>
+        <li>Personas malintencionadas.</li>
+        <li>Fallos del hardware.</li>
+      </ul>
+      <h3>Estrategias de Backup</h3>
+      <table>
+        <tr><th>Tipo</th><th>Descripcion</th><th>Ventaja</th><th>Desventaja</th></tr>
+        <tr><td><strong>Completa</strong></td><td>Todo el sistema</td><td>Restauracion rapida</td><td>Lenta, mucho espacio</td></tr>
+        <tr><td><strong>Diferencial</strong></td><td>Cambios desde la ultima completa</td><td>Rapida restauracion</td><td>Crece con el tiempo</td></tr>
+        <tr><td><strong>Incremental</strong></td><td>Cambios desde la ultima copia (cualquiera)</td><td>Rapida, poco espacio</td><td>Restauracion lenta</td></tr>
+      </table>
+      <h3>Herramientas</h3>
+      <div class="code-block" data-lang="bash"><code><span class="comment"># tar: crear archivo</span>
+<span class="cmd">tar</span> <span class="flag">-czf</span> <span class="path">backup.tar.gz</span> <span class="path">/home/</span>
+<span class="cmd">tar</span> <span class="flag">-xzf</span> <span class="path">backup.tar.gz</span>          <span class="comment"># Restaurar</span>
+<span class="cmd">tar</span> <span class="flag">-tzf</span> <span class="path">backup.tar.gz</span>          <span class="comment"># Listar contenido</span>
+
+<span class="comment"># dump/restore: backup a nivel de SF</span>
+<span class="cmd">dump</span> <span class="flag">-0u</span> <span class="flag">-f</span> <span class="path">/backup/full.dump</span> <span class="path">/home</span>
+<span class="cmd">restore</span> <span class="flag">-rf</span> <span class="path">/backup/full.dump</span>
+
+<span class="comment"># rsync: sincronizacion incremental</span>
+<span class="cmd">rsync</span> <span class="flag">-avz</span> <span class="path">/home/</span> <span class="path">/backup/home/</span>
+<span class="cmd">rsync</span> <span class="flag">-avz</span> <span class="flag">-e</span> ssh <span class="path">/home/</span> user@server:<span class="path">/backup/</span>
+
+<span class="comment"># dd: copia bit a bit</span>
+<span class="cmd">dd</span> <span class="flag">if=</span><span class="path">/dev/sda</span> <span class="flag">of=</span><span class="path">/backup/disco.img</span></code></div>
+      <h3>Automatizacion con cron</h3>
+      <div class="code-block" data-lang="bash"><code><span class="comment"># Backup diario a las 3:00 AM</span>
+0 3 * * * <span class="path">/usr/local/bin/backup.sh</span> >> <span class="path">/var/log/backup.log</span> 2>&1</code></div>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Crea una copia completa con tar de /home.</li>
+        <li>Programa un backup automatico con cron.</li>
+        <li>Practica rsync para sincronizacion.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema8.pdf">&#128196; EjerciciosTema8.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 8.pdf">&#9989; Ejercicios Tema 8 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm8"></div></div></div>
+  </div>
+</section>
+
+<!-- ===================== TEMA 9 ===================== -->
+<section class="theme-section" id="tema9">
+  <div class="theme-header">
+    <div class="theme-number">09</div>
+    <div class="theme-title-wrap">
+      <div class="theme-title">Gestion de las Comunicaciones</div>
+      <div class="theme-subtitle">Red, NFS, NIS, SAMBA, servicios de red</div>
+    </div>
+    <input type="checkbox" class="theme-check" data-tema="9" onchange="saveProgress()">
+  </div>
+  <div class="collapsible open"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Teoria</span><span class="collapsible-tag tag-teoria">TEORIA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <h3>Conceptos Basicos de Red</h3>
+      <ul>
+        <li><strong>Interfaces de red:</strong> conexiones fisicas/virtuales (eth0, wlan0).</li>
+        <li><strong>IP interna (privada):</strong> 192.168.x.x, 10.x.x.x. No accesible desde Internet.</li>
+        <li><strong>IP externa (publica):</strong> identificador unico asignado por el ISP.</li>
+        <li><strong>DNS:</strong> traduce nombres de dominio a IPs.</li>
+        <li><strong>Gateway:</strong> punto de acceso entre redes.</li>
+        <li><strong>Puerto:</strong> numero que identifica servicios (80=HTTP, 443=HTTPS, 22=SSH).</li>
+      </ul>
+      <h3>Configuracion y Diagnostico</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">ip</span> <span class="flag">-a</span>                  <span class="comment"># Ver interfaces e IPs</span>
+<span class="cmd">ping</span> host                <span class="comment"># Test conectividad</span>
+<span class="cmd">traceroute</span> host          <span class="comment"># Ruta de paquetes</span>
+<span class="cmd">ss</span> <span class="flag">-tulnp</span>               <span class="comment"># Puertos abiertos</span>
+<span class="cmd">curl</span> ifconfig.me          <span class="comment"># IP externa</span></code></div>
+      <h4>Ficheros de Configuracion</h4>
+      <ul>
+        <li><span class="key-concept">/etc/hostname</span> - Nombre del equipo.</li>
+        <li><span class="key-concept">/etc/hosts</span> - Resolucion local de nombres.</li>
+        <li><span class="key-concept">/etc/resolv.conf</span> - Servidores DNS.</li>
+        <li><span class="key-concept">/etc/network/interfaces</span> - Configuracion de red (Debian).</li>
+      </ul>
+      <h3>Servicios de Red</h3>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">systemctl</span> <span class="flag">--type=service --state=running</span>  <span class="comment"># Listar servicios activos</span></code></div>
+      <h3>Autenticacion Unica (SSO)</h3>
+      <ul>
+        <li><strong>NIS (Network Information Service):</strong> comparte informacion de usuarios/grupos en red.</li>
+        <li><strong>LDAP:</strong> directorio centralizado para autenticacion.</li>
+      </ul>
+      <h3>NFS (Network File System)</h3>
+      <p>Sistema de ficheros distribuido. Permite montar directorios remotos.</p>
+      <div class="code-block" data-lang="bash"><code><span class="comment"># SERVIDOR: /etc/exports</span>
+<span class="path">/home</span>   192.168.1.0/24(rw,sync,no_subtree_check)
+
+<span class="cmd">sudo</span> <span class="cmd">exportfs</span> <span class="flag">-ra</span>
+<span class="cmd">sudo</span> <span class="cmd">systemctl</span> restart nfs-kernel-server
+
+<span class="comment"># CLIENTE:</span>
+<span class="cmd">sudo</span> <span class="cmd">mount</span> servidor:<span class="path">/home</span> <span class="path">/mnt/home_remoto</span></code></div>
+      <h3>SAMBA</h3>
+      <p>Interoperabilidad con Windows (compartir ficheros e impresoras).</p>
+      <p>Configuracion: <span class="key-concept">/etc/samba/smb.conf</span></p>
+      <div class="code-block" data-lang="bash"><code><span class="cmd">sudo</span> <span class="cmd">smbpasswd</span> <span class="flag">-a</span> usuario   <span class="comment"># Crear usuario Samba</span>
+<span class="cmd">sudo</span> <span class="cmd">systemctl</span> restart smbd</code></div>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Ejercicios</span><span class="collapsible-tag tag-ejercicio">EJERCICIOS</span></div>
+    <div class="collapsible-body"><div class="collapsible-content content">
+      <ol>
+        <li>Consulta datos de la red con <code>ip -a</code>, DNS con <code>cat /etc/resolv.conf</code>.</li>
+        <li>Configura NFS: exporta un directorio y montalo desde otro equipo.</li>
+        <li>Configura Samba para compartir una carpeta con Windows.</li>
+      </ol>
+      <a class="file-link" href="Ejercicios/EjerciciosTema9.pdf">&#128196; EjerciciosTema9.pdf</a>
+      <a class="file-link" href="Ejercicios_Resueltos/Ejercicios Tema 9.pdf">&#9989; Ejercicios Tema 9 (Resueltos)</a>
+    </div></div>
+  </div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapsible(this)"><span class="collapsible-icon">&#9654;</span><span class="collapsible-label">Mapa Mental</span><span class="collapsible-tag tag-mapa">MAPA</span></div>
+    <div class="collapsible-body"><div class="collapsible-content"><div class="mindmap-container" id="mm9"></div></div></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// --- COLLAPSIBLE ---
+function toggleCollapsible(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+// --- SIDEBAR NAV ---
+function navTo(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  if (window.innerWidth <= 900) toggleSidebar();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// --- SCROLL SPY ---
+const sections = document.querySelectorAll('.theme-section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const id = e.target.id;
+      const nav = document.querySelector(`.nav-item[href="#${id}"]`);
+      if (nav) nav.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// --- PROGRESS ---
+function saveProgress() {
+  const checks = document.querySelectorAll('.theme-check');
+  const state = {};
+  let count = 0;
+  checks.forEach(c => { state[c.dataset.tema] = c.checked; if (c.checked) count++; });
+  localStorage.setItem('pas_progress', JSON.stringify(state));
+  updateProgressUI(count, checks.length);
+  navItems.forEach((n, i) => {
+    if (state[String(i + 1)]) n.classList.add('completed');
+    else n.classList.remove('completed');
+  });
+}
+function loadProgress() {
+  const state = JSON.parse(localStorage.getItem('pas_progress') || '{}');
+  const checks = document.querySelectorAll('.theme-check');
+  let count = 0;
+  checks.forEach(c => { c.checked = !!state[c.dataset.tema]; if (c.checked) count++; });
+  updateProgressUI(count, checks.length);
+  navItems.forEach((n, i) => {
+    if (state[String(i + 1)]) n.classList.add('completed');
+  });
+}
+function updateProgressUI(count, total) {
+  document.getElementById('progressCounter').textContent = `${count}/${total}`;
+  const pct = Math.round((count / total) * 100);
+  document.getElementById('progressPercent').textContent = `${pct}%`;
+  document.getElementById('progressBar').style.width = `${pct}%`;
+}
+loadProgress();
+
+// --- SEARCH ---
+function handleSearch(query) {
+  const q = query.toLowerCase().trim();
+  sections.forEach(s => {
+    if (!q) { s.classList.remove('search-hidden'); return; }
+    s.classList.toggle('search-hidden', !s.textContent.toLowerCase().includes(q));
+  });
+}
+
+// --- SCANLINES ---
+function toggleScanlines() {
+  document.querySelector('.scanlines').style.display =
+    document.querySelector('.scanlines').style.display === 'none' ? '' : 'none';
+}
+
+// --- MIND MAPS ---
+function createMindMap(containerId, data) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const w = 760, centerX = w / 2, centerY = 30;
+  const branchColors = ['#00ff9f','#00d4ff','#ffb700','#ff3366','#b48eff','#00ff9f','#00d4ff','#ffb700'];
+  let svg = `<svg width="${w}" height="${data.branches.length * 70 + 80}" viewBox="0 0 ${w} ${data.branches.length * 70 + 80}" xmlns="http://www.w3.org/2000/svg">`;
+  // Center node
+  const tw = data.title.length * 8 + 30;
+  svg += `<rect x="${centerX - tw/2}" y="8" width="${tw}" height="36" rx="8" fill="${branchColors[0]}" opacity="0.15" stroke="${branchColors[0]}" stroke-width="1.5"/>`;
+  svg += `<text x="${centerX}" y="32" text-anchor="middle" fill="${branchColors[0]}" font-size="13" font-weight="700">${data.title}</text>`;
+
+  data.branches.forEach((branch, i) => {
+    const y = 80 + i * 65;
+    const col = branchColors[i % branchColors.length];
+    const bw = branch.label.length * 7.5 + 24;
+    const bx = 20;
+    // Line from center to branch
+    svg += `<line x1="${centerX}" y1="44" x2="${bx + bw/2}" y2="${y + 14}" stroke="${col}" stroke-width="1" opacity="0.3"/>`;
+    // Branch node
+    svg += `<rect x="${bx}" y="${y}" width="${bw}" height="28" rx="6" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="1"/>`;
+    svg += `<text x="${bx + bw/2}" y="${y + 18}" text-anchor="middle" fill="${col}" font-size="11" font-weight="600">${branch.label}</text>`;
+    // Leaves
+    if (branch.leaves) {
+      const startX = bx + bw + 16;
+      branch.leaves.forEach((leaf, j) => {
+        const lx = startX + j * (leaf.length * 6.5 + 26);
+        const lw = leaf.length * 6.5 + 16;
+        if (lx + lw > w) return;
+        svg += `<line x1="${bx + bw}" y1="${y + 14}" x2="${lx}" y2="${y + 14}" stroke="${col}" stroke-width="0.7" opacity="0.25"/>`;
+        svg += `<rect x="${lx}" y="${y + 2}" width="${lw}" height="24" rx="4" fill="${col}" opacity="0.06" stroke="${col}" stroke-width="0.5"/>`;
+        svg += `<text x="${lx + lw/2}" y="${y + 18}" text-anchor="middle" fill="${col}" font-size="9.5" opacity="0.8">${leaf}</text>`;
+      });
+    }
+  });
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+const mmData = {
+  mm1: { title: 'T1: SOFTWARE LIBRE Y GNU/LINUX', branches: [
+    { label: 'Generaciones SO', leaves: ['1945-55','1955-68','1968-81','1981-01','2001+'] },
+    { label: 'Software Libre', leaves: ['Stallman','FSF','4 libertades','Copyleft'] },
+    { label: 'GNU/Linux', leaves: ['Torvalds 1991','GPL','Kernel','Distros'] },
+    { label: 'Licencias', leaves: ['GPL','BSD','MIT','CC','MPL'] },
+    { label: 'Admin Sistemas', leaves: ['Hardware','Software','Soporte','Seguridad'] },
+    { label: 'Estrategias', leaves: ['Planear','Reversible','Incremental','Probar'] },
+    { label: 'Herramientas', leaves: ['VirtualBox','root','sudo','visudo'] },
+  ]},
+  mm2: { title: 'T2: ORGANIZACION SO GNU/LINUX', branches: [
+    { label: 'Ficheros', leaves: ['Todo es fichero','Jerarquico','/=raiz'] },
+    { label: 'Nodos-i', leaves: ['Metadatos','ls -i','df -i'] },
+    { label: 'Permisos', leaves: ['rwx','chmod','chown','chgrp','umask'] },
+    { label: 'Especiales', leaves: ['suid','sgid','sticky bit'] },
+    { label: 'Tipos fichero', leaves: ['Normal','Dir','Bloque','Caracter','Pipe','Socket'] },
+    { label: 'Enlaces', leaves: ['Fisico (ln)','Simbolico (ln -s)'] },
+    { label: 'FHS', leaves: ['/bin','/etc','/home','/var','/usr','/proc'] },
+  ]},
+  mm3: { title: 'T3: GESTION DE USUARIOS', branches: [
+    { label: 'Ficheros', leaves: ['passwd','shadow','group','gshadow'] },
+    { label: 'Contrasenas', leaves: ['Hash+Salt','MD5','SHA','yescrypt'] },
+    { label: 'Shadow', leaves: ['changed','minlife','maxlife','warn'] },
+    { label: 'Herramientas', leaves: ['adduser','usermod','deluser','chage'] },
+    { label: 'Inicializacion', leaves: ['/etc/skel','.bashrc','.profile'] },
+    { label: 'Grupos', leaves: ['Primario','Secundario','/etc/group'] },
+    { label: 'Restrictivas', leaves: ['rbash','nologin','false'] },
+  ]},
+  mm4: { title: 'T4: ARRANQUE Y SERVICIOS', branches: [
+    { label: 'Proceso Boot', leaves: ['BIOS/UEFI','MBR','Kernel','initrd','init'] },
+    { label: 'GRUB', leaves: ['/etc/default/grub','update-grub2','grub.d/'] },
+    { label: 'Modos', leaves: ['Monousuario','Multiusuario','Recovery'] },
+    { label: 'Niveles', leaves: ['0=off','1=rescue','3=multi','5=GUI','6=reboot'] },
+    { label: 'systemd', leaves: ['systemctl','targets','journalctl'] },
+    { label: 'Parada', leaves: ['shutdown','halt','reboot'] },
+  ]},
+  mm5: { title: 'T5: RECURSOS DEL SISTEMA', branches: [
+    { label: 'Procesos', leaves: ['PID','PPID','STAT','fork'] },
+    { label: 'Estados', leaves: ['R=run','S=sleep','D=disk','Z=zombie','T=stop'] },
+    { label: 'Prioridad', leaves: ['nice','renice','-20 a 19'] },
+    { label: 'Senales', leaves: ['KILL(9)','TERM(15)','HUP(1)','STOP(17)'] },
+    { label: 'Monitor', leaves: ['ps','top','uptime','vmstat','pstree'] },
+    { label: 'Cron', leaves: ['crontab -e','at','min h d m ds cmd'] },
+    { label: 'Memoria/Disco', leaves: ['free','df','du','iostat'] },
+  ]},
+  mm6: { title: 'T6: SF Y DISCOS', branches: [
+    { label: 'Discos', leaves: ['HDD','SSD','NVMe'] },
+    { label: 'SA Estructura', leaves: ['Boot','Superbloque','Mapas bits','Nodos-i','Datos'] },
+    { label: 'VFS', leaves: ['4 capas','ext2/3/4','proc','msdos'] },
+    { label: 'Asignacion', leaves: ['Contigua','Enlazada(FAT)','Indexada(inodos)'] },
+    { label: 'Espacio libre', leaves: ['Mapas bits','Listas libres'] },
+    { label: 'Bloques', leaves: ['Tamano','IOPS','Throughput','Cache'] },
+  ]},
+  mm7: { title: 'T7: ADMIN SISTEMAS FICHEROS', branches: [
+    { label: 'Montaje', leaves: ['mount','umount','/etc/fstab','UUID'] },
+    { label: 'Anadir disco', leaves: ['lsblk','fdisk','mkfs','mount'] },
+    { label: 'Comprobacion', leaves: ['fsck','e2fsck','journaling'] },
+    { label: 'SF Tipos', leaves: ['ext2','ext3','ext4','xfs','btrfs'] },
+    { label: 'LVM', leaves: ['Volumenes logicos','Flexibilidad'] },
+    { label: 'RAID', leaves: ['RAID0','RAID1','RAID5','mdadm'] },
+    { label: 'Cuotas', leaves: ['edquota','repquota','quotacheck'] },
+  ]},
+  mm8: { title: 'T8: BACKUP Y RESTAURACION', branches: [
+    { label: 'Prevencion', leaves: ['Que','Donde','Como','Cuando'] },
+    { label: 'Escenarios', leaves: ['Humano','Virus','Malicia','Hardware'] },
+    { label: 'Estrategias', leaves: ['Completa','Diferencial','Incremental'] },
+    { label: 'Herramientas', leaves: ['tar','dump/restore','rsync','dd'] },
+    { label: 'Automatizacion', leaves: ['cron','scripts','logs'] },
+  ]},
+  mm9: { title: 'T9: COMUNICACIONES', branches: [
+    { label: 'Red basica', leaves: ['IP','DNS','Gateway','Puertos'] },
+    { label: 'Config', leaves: ['hostname','hosts','resolv.conf','interfaces'] },
+    { label: 'Diagnostico', leaves: ['ip','ping','traceroute','ss','nmap'] },
+    { label: 'Servicios', leaves: ['SSH','HTTP','DNS','DHCP'] },
+    { label: 'NFS', leaves: ['/etc/exports','mount','servidor','cliente'] },
+    { label: 'Autenticacion', leaves: ['NIS','LDAP','SSO'] },
+    { label: 'SAMBA', leaves: ['smb.conf','smbpasswd','Windows'] },
+  ]},
+};
+
+Object.entries(mmData).forEach(([id, data]) => createMindMap(id, data));
+</script>
+</body>
+</html>
